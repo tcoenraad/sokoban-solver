@@ -1,1 +1,31 @@
 <%= ERBHelpers.as_comment(self.to_s) %>
+
+MODULE main
+
+VAR
+  directions : { NORTH, EAST, SOUTH, WEST };
+  x : 0 .. <%= self.max_x %>;
+  y : 0 .. <%= self.max_y %>;
+  blocks : array 0 .. 0 of array {x, y} of 0 .. <%= [self.max_x, self.max_y].max %>;
+  north_enabled : boolean;
+  east_enabled : boolean;
+  south_enabled : boolean;
+  west_enabled : boolean;
+  empty : { EMPTY } ;
+
+DEFINE
+  fields := [<%= self.board.map{|row| "[#{row.map {|field| field}.join(',')}]"}.join(', ') %>];
+  goals := <%= self.goals.map{|goal| [goal[:x], goal[:y]]} %>;
+
+ASSIGN
+  init(x) := <%= self.man[:x] %>;
+  init(y) := <%= self.man[:y] %>;
+  <% self.blocks.each_with_index do |block, index| %>
+  init(blocks[<%= index %>, x]) = <%= block[:x] %>
+  init(blocks[<%= index %>, y]) = <%= block[:y] %>
+  <% end %>
+  init(north_enabled) := FALSE;
+  init(east_enabled) := FALSE;
+  init(south_enabled) := FALSE;
+  init(west_enabled) := FALSE;
+  init(directions) := { };
