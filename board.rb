@@ -2,11 +2,11 @@ require 'erb'
 require_relative 'erb_helpers'
 
 class Field
-  WALL = "WALL"
-  MAN = "MAN"
-  GOAL = "GOAL"
-  EMPTY = "EMPTY"
-  BLOCK = "BLOCK"
+  WALL = 'WALL'.freeze
+  MAN = 'MAN'.freeze
+  GOAL = 'GOAL'.freeze
+  EMPTY = 'EMPTY'.freeze
+  BLOCK = 'BLOCK'.freeze
 
   CHAR_TO_FIELD = {
     '#' => Field::WALL,
