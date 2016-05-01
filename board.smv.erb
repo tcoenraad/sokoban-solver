@@ -6,7 +6,7 @@ VAR
   directions : { NORTH, EAST, SOUTH, WEST };
   x : 0 .. <%= self.max_x %>;
   y : 0 .. <%= self.max_y %>;
-  blocks : array 0 .. <%= self.blocks.count - 1 %> of array 0 .. 1 of 0 .. <%= [self.max_x, self.max_y].max %>;
+  blocks : array 0 .. <%= self.blocks.size - 1 %> of array 0 .. 1 of 0 .. <%= [self.max_x, self.max_y].max %>;
   north_enabled : boolean;
   east_enabled : boolean;
   south_enabled : boolean;
@@ -26,10 +26,10 @@ ASSIGN
   init(blocks[<%= index %>][1]) := <%= block[:y] %>;
   <% end %>
   -- the direction in which the man moves has to be empty, or when a block is on it, that block should be movable in the same direction
-  next(north_enabled) := y > 0 & fields[x][y - 1] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y - 1) & y > 1 & fields[x][y - 2] = EMPTY)" }.join(' | ') %>);
-  next(east_enabled) := x < <%= self.max_x %> & fields[x + 1][y] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = (x + 1) & blocks[#{index}][1] = y & x < #{self.max_x - 1} & fields[x + 2][y] = EMPTY)" }.join(' | ') %>);
-  next(south_enabled) := y < <%= self.max_y %> & fields[x][y + 1] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y + 1) & y < #{self.max_y - 1} & fields[x][y + 2] = EMPTY)" }.join(' | ') %>);
-  next(west_enabled) := x > 0 & fields[x - 1][y] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = (x - 1) & blocks[#{index}][1] = y & x > 1 & fields[x - 2][y] = EMPTY)" }.join(' | ') %>);
+  next(north_enabled) := y > 0 & fields[x][y - 1] = EMPTY | (<%= (0...self.blocks.size).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y - 1) & y > 1 & fields[x][y - 2] = EMPTY)" }.join(' | ') %>);
+  next(east_enabled) := x < <%= self.max_x %> & fields[x + 1][y] = EMPTY | (<%= (0...self.blocks.size).map { |index| "(blocks[#{index}][0] = (x + 1) & blocks[#{index}][1] = y & x < #{self.max_x - 1} & fields[x + 2][y] = EMPTY)" }.join(' | ') %>);
+  next(south_enabled) := y < <%= self.max_y %> & fields[x][y + 1] = EMPTY | (<%= (0...self.blocks.size).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y + 1) & y < #{self.max_y - 1} & fields[x][y + 2] = EMPTY)" }.join(' | ') %>);
+  next(west_enabled) := x > 0 & fields[x - 1][y] = EMPTY | (<%= (0...self.blocks.size).map { |index| "(blocks[#{index}][0] = (x - 1) & blocks[#{index}][1] = y & x > 1 & fields[x - 2][y] = EMPTY)" }.join(' | ') %>);
 
   next(directions) := case
     next(north_enabled) & next(east_enabled) & next(south_enabled) & next(west_enabled) : { NORTH, EAST, SOUTH, WEST };

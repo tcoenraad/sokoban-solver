@@ -41,11 +41,11 @@ class Board
   end
 
   def max_x
-    @max_x ||= @board.count - 1
+    @max_x ||= @board.size - 1
   end
 
   def max_y
-    @max_y ||= @board.first.count - 1
+    @max_y ||= @board.first.size - 1
   end
 
   def goals
