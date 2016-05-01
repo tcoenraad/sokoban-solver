@@ -15,7 +15,7 @@ VAR
   wall : { WALL } ;
 
 DEFINE
-  fields := [<%= self.board.map{|row| "[#{row.map {|field| field == Field::WALL ? 'WALL' : 'EMPTY'}.join(',')}]"}.join(', ') %>];
+  fields := [<%= self.board.map{|col| "[#{col.map {|field| field == Field::WALL ? 'WALL' : 'EMPTY'}.join(',')}]"}.join(', ') %>];
   goals := <%= self.goals.map{|goal| [goal[:x], goal[:y]]} %>;
 
 ASSIGN
@@ -29,4 +29,63 @@ ASSIGN
   init(east_enabled) := FALSE;
   init(south_enabled) := FALSE;
   init(west_enabled) := FALSE;
-  init(directions) := { };
+
+  next(north_enabled) := y > 0 & fields[x][y - 1] = EMPTY & (<%= (0...self.blocks.count).map { |index| "blocks[#{index}][0] = x & blocks[#{index}][1] = (y - 1) ? y > 1 & fields[x][y - 2] = EMPTY" }.join(' & ') %> : TRUE);
+  next(east_enabled) := x < <%= self.max_x %> & fields[x + 1][y] = EMPTY & (<%= (0...self.blocks.count).map { |index| "blocks[#{index}][0] = (x + 1) & blocks[#{index}][1] = y ? x < #{self.max_x - 1} & fields[x + 2][y] = EMPTY" }.join(' & ') %> : TRUE);
+  next(south_enabled) := y < <%= self.max_y %> & fields[x][y + 1] = EMPTY & (<%= (0...self.blocks.count).map { |index| "blocks[#{index}][0] = x & blocks[#{index}][1] = (y + 1) ? y < #{self.max_y - 1} & fields[x][y + 2] = EMPTY" }.join(' & ') %> : TRUE);
+  next(west_enabled) := x > 0 & fields[x - 1][y] = EMPTY & (<%= (0...self.blocks.count).map { |index| "blocks[#{index}][0] = (x - 1) & blocks[#{index}][1] = y ? x > 1 & fields[x - 2][y] = EMPTY" }.join(' & ') %> : TRUE);
+
+  next(directions) := case
+    next(north_enabled) & next(east_enabled) & next(south_enabled) & next(west_enabled) : { NORTH, EAST, SOUTH, WEST };
+
+    next(north_enabled) & next(east_enabled)  & next(south_enabled) : { NORTH, EAST, SOUTH };
+    next(north_enabled) & next(south_enabled) & next(west_enabled) : { NORTH, SOUTH, WEST };
+    next(north_enabled) & next(east_enabled)  & next(west_enabled) : { NORTH, EAST, WEST };
+    next(east_enabled) & next(south_enabled) & next(west_enabled) : { EAST, SOUTH, WEST };
+
+    next(north_enabled) & next(south_enabled) : { NORTH, SOUTH };
+    next(north_enabled) & next(east_enabled) : { NORTH, EAST };
+    next(north_enabled) & next(west_enabled) : { NORTH, WEST };
+    next(east_enabled) & next(south_enabled) : { EAST, SOUTH };
+    next(east_enabled) & next(west_enabled) : { EAST, WEST };
+    next(west_enabled) & next(south_enabled) : { SOUTH, WEST };
+
+    next(north_enabled) : NORTH;
+    next(east_enabled) : EAST;
+    next(south_enabled) : SOUTH;
+    next(west_enabled) : WEST;
+
+    TRUE : { NORTH, EAST, SOUTH, WEST };
+  esac;
+
+  next(y) := case
+    next(directions) = NORTH & y > 0 : y - 1;
+    next(directions) = SOUTH & y < <%= self.max_y %> : y + 1;
+    TRUE : y;
+  esac;
+
+  next(x) := case
+    next(directions) = EAST & x < <%= self.max_x %>: x + 1;
+    next(directions) = WEST & x > 0 : x - 1;
+    TRUE : x;
+  esac;
+<% self.blocks.each_with_index do |block, index| %>
+  next(blocks[<%= index %>][0]) := case
+    blocks[<%= index %>][0] = x + 1 & blocks[<%= index %>][1] = y & next(directions) = EAST & x < <%= self.max_x - 1 %> : x + 2;
+    blocks[<%= index %>][0] = x - 1 & blocks[<%= index %>][1] = y & next(directions) = WEST & x > 1  : x - 2;
+    TRUE : blocks[<%= index %>][0];
+  esac;
+
+  next(blocks[<%= index %>][1]) := case
+    blocks[<%= index %>][0] = x & blocks[<%= index %>][1] = y - 1 & next(directions) = NORTH & y > 1 : y - 2;
+    blocks[<%= index %>][0] = x & blocks[<%= index %>][1] = y + 1 & next(directions) = SOUTH & y < <%= self.max_y - 1 %> : y + 2;
+    TRUE : blocks[<%= index %>][1];
+  esac;
+<% end %>
+LTLSPEC ! F (<%=
+self.goals.each_with_index.map do |goal, goal_index|
+  self.blocks.each_with_index.map do |block, block_index|
+    "goals[#{goal_index}][0] = blocks[#{block_index}][0] & goals[#{goal_index}][1] = blocks[#{block_index}][1]"
+  end.join('|')
+end.join('&')
+%>);
