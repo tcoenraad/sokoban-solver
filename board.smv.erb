@@ -65,7 +65,7 @@ ASSIGN
     next(directions) = WEST & x > 0 : x - 1;
     TRUE : x;
   esac;
-<% self.blocks.each_with_index do |block, index| %>
+<% self.blocks.each_with_index do |_, index| %>
   next(blocks[<%= index %>][0]) := case
     blocks[<%= index %>][0] = x + 1 & blocks[<%= index %>][1] = y & next(directions) = EAST & x < <%= self.max_x - 1 %> : x + 2;
     blocks[<%= index %>][0] = x - 1 & blocks[<%= index %>][1] = y & next(directions) = WEST & x > 1  : x - 2;
@@ -80,7 +80,7 @@ ASSIGN
 <% end %>
 LTLSPEC ! F (<%=
 self.goals.each_with_index.map do |_, goal_index|
-  goal = self.blocks.each_with_index.map do |block, block_index|
+  goal = self.blocks.each_with_index.map do |_, block_index|
     "goals[#{goal_index}][0] = blocks[#{block_index}][0] & goals[#{goal_index}][1] = blocks[#{block_index}][1]"
   end.join(' | ')
   "(#{goal})"
