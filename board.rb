@@ -31,7 +31,7 @@ class Board
   attr_reader :board
 
   def initialize(board)
-    @board = Board.parse(board)
+    @board = Board.parse(board).transpose
   end
 
   def self.parse(board)
@@ -41,11 +41,11 @@ class Board
   end
 
   def max_x
-    @max_x ||= @board.count
+    @max_x ||= @board.count - 1
   end
 
   def max_y
-    @max_y ||= @board.first.count
+    @max_y ||= @board.first.count - 1
   end
 
   def goals
@@ -61,7 +61,7 @@ class Board
   end
 
   def to_s
-    @board.map do |row|
+    @board.transpose.map do |row|
       row.map { |field| Field::FIELD_TO_CHAR[field] }.join
     end.join("\n")
   end
@@ -76,7 +76,7 @@ class Board
     result = []
     @board.each_with_index.map do |row, y|
       row.each_with_index.map do |field, x|
-        result << { x: x, y: y } if field == field_type
+        result << { x: y, y: x } if field == field_type
       end
     end
     result

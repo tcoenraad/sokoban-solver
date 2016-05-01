@@ -6,7 +6,7 @@ VAR
   directions : { NORTH, EAST, SOUTH, WEST };
   x : 0 .. <%= self.max_x %>;
   y : 0 .. <%= self.max_y %>;
-  blocks : array 0 .. 0 of array {x, y} of 0 .. <%= [self.max_x, self.max_y].max %>;
+  blocks : array 0 .. 0 of array 0 .. 1 of 0 .. <%= [self.max_x, self.max_y].max %>;
   north_enabled : boolean;
   east_enabled : boolean;
   south_enabled : boolean;
@@ -22,8 +22,8 @@ ASSIGN
   init(x) := <%= self.man[:x] %>;
   init(y) := <%= self.man[:y] %>;
   <% self.blocks.each_with_index do |block, index| %>
-  init(blocks[<%= index %>, x]) = <%= block[:x] %>
-  init(blocks[<%= index %>, y]) = <%= block[:y] %>
+  init(blocks[<%= index %>][0]) := <%= block[:x] %>;
+  init(blocks[<%= index %>][1]) := <%= block[:y] %>;
   <% end %>
   init(north_enabled) := FALSE;
   init(east_enabled) := FALSE;
