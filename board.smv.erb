@@ -6,7 +6,7 @@ VAR
   directions : { NORTH, EAST, SOUTH, WEST };
   x : 0 .. <%= self.max_x %>;
   y : 0 .. <%= self.max_y %>;
-  blocks : array 0 .. 0 of array 0 .. 1 of 0 .. <%= [self.max_x, self.max_y].max %>;
+  blocks : array 0 .. <%= self.blocks.count - 1 %> of array 0 .. 1 of 0 .. <%= [self.max_x, self.max_y].max %>;
   north_enabled : boolean;
   east_enabled : boolean;
   south_enabled : boolean;
