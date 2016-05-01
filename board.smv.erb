@@ -15,8 +15,8 @@ VAR
   wall : { WALL } ;
 
 DEFINE
-  fields := [<%= self.board.map{|col| "[#{col.map {|field| field == Field::WALL ? 'WALL' : 'EMPTY'}.join(',')}]"}.join(', ') %>];
-  goals := <%= self.goals.map{|goal| [goal[:x], goal[:y]]} %>;
+  fields := [<%= self.board.map{ |col| "[#{col.map { |field| field == Field::WALL ? 'WALL' : 'EMPTY'}.join(',')}]" }.join(', ') %>];
+  goals := <%= self.goals.map{ |goal| [goal[:x], goal[:y]] } %>;
 
 ASSIGN
   init(x) := <%= self.man[:x] %>;
@@ -25,6 +25,7 @@ ASSIGN
   init(blocks[<%= index %>][0]) := <%= block[:x] %>;
   init(blocks[<%= index %>][1]) := <%= block[:y] %>;
   <% end %>
+  -- the direction in which the man moves has to be empty, or when a block is on it, that block should be movable in the same direction
   next(north_enabled) := y > 0 & fields[x][y - 1] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y - 1) & y > 1 & fields[x][y - 2] = EMPTY)" }.join(' | ') %>);
   next(east_enabled) := x < <%= self.max_x %> & fields[x + 1][y] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = (x + 1) & blocks[#{index}][1] = y & x < #{self.max_x - 1} & fields[x + 2][y] = EMPTY)" }.join(' | ') %>);
   next(south_enabled) := y < <%= self.max_y %> & fields[x][y + 1] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y + 1) & y < #{self.max_y - 1} & fields[x][y + 2] = EMPTY)" }.join(' | ') %>);
