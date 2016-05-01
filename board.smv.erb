@@ -25,10 +25,10 @@ ASSIGN
   init(blocks[<%= index %>][0]) := <%= block[:x] %>;
   init(blocks[<%= index %>][1]) := <%= block[:y] %>;
   <% end %>
-  next(north_enabled) := y > 0 & fields[x][y - 1] = EMPTY & (<%= (0...self.blocks.count).map { |index| "blocks[#{index}][0] = x & blocks[#{index}][1] = (y - 1) ? y > 1 & fields[x][y - 2] = EMPTY" }.join(' & ') %> : TRUE);
-  next(east_enabled) := x < <%= self.max_x %> & fields[x + 1][y] = EMPTY & (<%= (0...self.blocks.count).map { |index| "blocks[#{index}][0] = (x + 1) & blocks[#{index}][1] = y ? x < #{self.max_x - 1} & fields[x + 2][y] = EMPTY" }.join(' & ') %> : TRUE);
-  next(south_enabled) := y < <%= self.max_y %> & fields[x][y + 1] = EMPTY & (<%= (0...self.blocks.count).map { |index| "blocks[#{index}][0] = x & blocks[#{index}][1] = (y + 1) ? y < #{self.max_y - 1} & fields[x][y + 2] = EMPTY" }.join(' & ') %> : TRUE);
-  next(west_enabled) := x > 0 & fields[x - 1][y] = EMPTY & (<%= (0...self.blocks.count).map { |index| "blocks[#{index}][0] = (x - 1) & blocks[#{index}][1] = y ? x > 1 & fields[x - 2][y] = EMPTY" }.join(' & ') %> : TRUE);
+  next(north_enabled) := y > 0 & fields[x][y - 1] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y - 1) & y > 1 & fields[x][y - 2] = EMPTY)" }.join(' | ') %>);
+  next(east_enabled) := x < <%= self.max_x %> & fields[x + 1][y] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = (x + 1) & blocks[#{index}][1] = y & x < #{self.max_x - 1} & fields[x + 2][y] = EMPTY)" }.join(' | ') %>);
+  next(south_enabled) := y < <%= self.max_y %> & fields[x][y + 1] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y + 1) & y < #{self.max_y - 1} & fields[x][y + 2] = EMPTY)" }.join(' | ') %>);
+  next(west_enabled) := x > 0 & fields[x - 1][y] = EMPTY | (<%= (0...self.blocks.count).map { |index| "(blocks[#{index}][0] = (x - 1) & blocks[#{index}][1] = y & x > 1 & fields[x - 2][y] = EMPTY)" }.join(' | ') %>);
 
   next(directions) := case
     next(north_enabled) & next(east_enabled) & next(south_enabled) & next(west_enabled) : { NORTH, EAST, SOUTH, WEST };
