@@ -41,7 +41,7 @@ class Board
 
     longest_line_length = board.map(&:length).max
     board.each do |line|
-      line[line.size..longest_line_length] = Field::WALL if line.size < longest_line_length
+      line.concat([Field::WALL] * (longest_line_length - line.size))
     end
   end
 
