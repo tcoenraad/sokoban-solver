@@ -78,9 +78,10 @@ ASSIGN
   esac;
 <% end %>
 LTLSPEC ! F (<%=
-self.goals.each_with_index.map do |goal, goal_index|
-  self.blocks.each_with_index.map do |block, block_index|
+self.goals.each_with_index.map do |_, goal_index|
+  goal = self.blocks.each_with_index.map do |block, block_index|
     "goals[#{goal_index}][0] = blocks[#{block_index}][0] & goals[#{goal_index}][1] = blocks[#{block_index}][1]"
-  end.join('|')
-end.join('&')
+  end.join(' | ')
+  "(#{goal})"
+end.join(' & ')
 %>);
