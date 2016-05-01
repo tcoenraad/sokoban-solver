@@ -79,8 +79,8 @@ class Board
 
   def find_field(field_type)
     result = []
-    @board.each_with_index.map do |row, y|
-      row.each_with_index.map do |field, x|
+    @board.each_with_index.map do |col, y|
+      col.each_with_index.map do |field, x|
         result << { x: y, y: x } if field == field_type
       end
     end
