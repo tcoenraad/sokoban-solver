@@ -12,9 +12,10 @@ VAR
   south_enabled : boolean;
   west_enabled : boolean;
   empty : { EMPTY } ;
+  wall : { WALL } ;
 
 DEFINE
-  fields := [<%= self.board.map{|row| "[#{row.map {|field| field}.join(',')}]"}.join(', ') %>];
+  fields := [<%= self.board.map{|row| "[#{row.map {|field| field == Field::WALL ? 'WALL' : 'EMPTY'}.join(',')}]"}.join(', ') %>];
   goals := <%= self.goals.map{|goal| [goal[:x], goal[:y]]} %>;
 
 ASSIGN
