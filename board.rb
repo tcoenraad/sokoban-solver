@@ -30,19 +30,21 @@ end
 class Board
   attr_reader :board
 
-  def initialize(board_string)
-    @board = Board.parse(board_string).transpose
+  def initialize(board)
+    @board = board
   end
 
   def self.parse(board_string)
-    board = board_string.each_line.map do |line|
-      Line.parse(line.strip)
-    end
+    board = board_string.each_line.map { |line| Line.parse(line.strip) }
+    Board.new(board).normalize
+  end
 
+  def normalize
     longest_line_length = board.map(&:length).max
     board.each do |line|
       line.concat([Field::WALL] * (longest_line_length - line.size))
     end
+    self
   end
 
   def max_x
