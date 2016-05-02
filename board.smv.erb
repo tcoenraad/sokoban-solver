@@ -78,7 +78,7 @@ ASSIGN
     TRUE : blocks[<%= index %>][1];
   esac;
 <% end %>
-LTLSPEC ! F (<%=
+CTLSPEC ! EF (<%=
 self.goals.each_with_index.map do |_, goal_index|
   goal = self.blocks.each_with_index.map do |_, block_index|
     "goals[#{goal_index}][0] = blocks[#{block_index}][0] & goals[#{goal_index}][1] = blocks[#{block_index}][1]"
