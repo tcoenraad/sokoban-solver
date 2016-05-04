@@ -36,14 +36,19 @@ class Board
 
   def self.parse(board_string)
     board = board_string.each_line.map { |line| Line.parse(line.strip) }
-    Board.new(board).normalize
+    Board.new(board).normalize!.transpose!
   end
 
-  def normalize
+  def normalize!
     longest_line_length = board.map(&:length).max
     board.each do |line|
       line.concat([Field::WALL] * (longest_line_length - line.size))
     end
+    self
+  end
+
+  def transpose!
+    @board = board.transpose
     self
   end
 
@@ -68,7 +73,7 @@ class Board
   end
 
   def to_s
-    @board.transpose.map do |row|
+    board.transpose.map do |row|
       row.map { |field| Field::FIELD_TO_CHAR[field] }.join
     end.join("\n")
   end
