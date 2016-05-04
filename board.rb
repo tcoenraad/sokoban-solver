@@ -36,7 +36,7 @@ class Board
 
   def self.parse(board_string)
     board = board_string.each_line.map { |line| Line.parse(line.strip) }
-    Board.new(board).normalize!.transpose!
+    Board.new(board).normalize!.minimize!.transpose!
   end
 
   def normalize!
@@ -45,6 +45,13 @@ class Board
       line.concat([Field::WALL] * (longest_line_length - line.size))
     end
     self
+  end
+
+  def minimize!
+    remove_walls_horizontally(board)
+    transpose!
+    remove_walls_horizontally(board)
+    transpose!
   end
 
   def transpose!
@@ -92,5 +99,11 @@ class Board
       end
     end
     result
+  end
+
+  def remove_walls_horizontally(board)
+    board.each do |line|
+      board.delete(line) if line.all? { |field| field == Field::WALL }
+    end
   end
 end
