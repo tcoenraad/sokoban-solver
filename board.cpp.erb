@@ -1,0 +1,25 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <cstdlib>
+
+#include <sylvan.h>
+
+int solve() {
+    LACE_ME;
+
+    return 0;
+}
+
+int main() {
+    lace_init(0, 0);
+    lace_startup(0, NULL, NULL);
+
+    sylvan_init_package(1LL<<21, 1LL<<25, 1LL<<20, 1LL<<24);
+    sylvan_init_bdd(6);
+
+    solve();
+    return 0;
+}

@@ -89,6 +89,10 @@ class Board
     ERB.new(File.read('board.smv.erb')).result(binding)
   end
 
+  def to_cpp
+    ERB.new(File.read('board.cpp.erb')).result(binding)
+  end
+
   private
 
   def find_field(field_type)
