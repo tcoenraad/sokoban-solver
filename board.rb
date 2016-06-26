@@ -90,7 +90,7 @@ class Board
   end
 
   def to_cpp
-    ERB.new(File.read('board.cpp.erb')).result(binding)
+    ERB.new(File.read('board.cpp.erb'), 0, '-').result(binding)
   end
 
   private
