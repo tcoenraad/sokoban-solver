@@ -6,9 +6,34 @@
 #include <cstdlib>
 
 #include <sylvan.h>
+#include <sylvan_obj.hpp>
+
+using namespace sylvan;
 
 int solve() {
     LACE_ME;
+<% n = 0 -%>
+<% self.board.each_with_index do |row, i| -%>
+  <% row.each_with_index do |field, j| -%>
+    <% next if field == Field::WALL %>
+    Bdd man_<%= "#{i}_#{j}" %> = Bdd::bddVar(<%= n += 1 %>);
+    Bdd block_<%= "#{i}_#{j}" %> = Bdd::bddVar(<%= n += 1 %>);
+  <% end -%>
+<% end -%>
+
+<% initial_state = self.board.each_with_index.map do |row, i|
+  row.each_with_index.map do |field, j|
+    next if field == Field::WALL
+    ["#{field != Field::MAN ? '!' : ''}man_#{i}_#{j}",
+     "#{field != Field::BLOCK ? '!' : ''}block_#{i}_#{j}"]
+  end
+end
+-%>
+    Bdd initial_state = <%= initial_state.join(' * ') %>;
+
+    FILE* file = fopen("start.dot", "w");
+    sylvan_fprintdot_nc(file, initial_state.GetBDD());
+    fclose(file);
 
     return 0;
 }
