@@ -1,5 +1,15 @@
 require 'erb'
+
 require_relative 'erb_helpers'
+
+class Location
+  attr_reader :x, :y
+
+  def initialize(x, y)
+    @x = x
+    @y = y
+  end
+end
 
 class Field
   WALL = 'WALL'.freeze
@@ -68,15 +78,15 @@ class Board
   end
 
   def goals
-    @goals ||= find_field(Field::GOAL)
+    @goals ||= find_fields(Field::GOAL)
   end
 
   def blocks
-    @blocks ||= find_field(Field::BLOCK)
+    @blocks ||= find_fields(Field::BLOCK)
   end
 
   def man
-    @man ||= find_field(Field::MAN).first
+    @man ||= find_fields(Field::MAN).first
   end
 
   def to_s
@@ -95,11 +105,11 @@ class Board
 
   private
 
-  def find_field(field_type)
+  def find_fields(field_type)
     result = []
     @board.each_with_index.map do |col, y|
       col.each_with_index.map do |field, x|
-        result << { x: y, y: x } if field == field_type
+        result << Location.new(x, y) if field == field_type
       end
     end
     result

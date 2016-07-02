@@ -21,7 +21,8 @@ int solve() {
   <% end -%>
 <% end -%>
 
-<% initial_state = self.board.each_with_index.map do |row, i|
+<%
+initial_state = self.board.each_with_index.map do |row, i|
   row.each_with_index.map do |field, j|
     next if field == Field::WALL
     ["#{field == Field::MAN ? '' : '!'}man_#{i}_#{j}",
@@ -30,6 +31,8 @@ int solve() {
 end
 -%>
     Bdd initial_state = <%= initial_state.join(' * ') %>;
+
+    Bdd goal_state = <%= blocks.map{|b| "block_#{b.x}_#{b.y}"}.join(' * ') %>;
 
     FILE* file = fopen("start.dot", "w");
     sylvan_fprintdot_nc(file, initial_state.GetBDD());
