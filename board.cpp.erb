@@ -24,8 +24,8 @@ int solve() {
 <% initial_state = self.board.each_with_index.map do |row, i|
   row.each_with_index.map do |field, j|
     next if field == Field::WALL
-    ["#{field != Field::MAN ? '!' : ''}man_#{i}_#{j}",
-     "#{field != Field::BLOCK ? '!' : ''}block_#{i}_#{j}"]
+    ["#{field == Field::MAN ? '' : '!'}man_#{i}_#{j}",
+     "#{field == Field::BLOCK ? '' : '!'}block_#{i}_#{j}"]
   end
 end
 -%>
