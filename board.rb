@@ -107,8 +107,8 @@ class Board
 
   def find_fields(field_type)
     result = []
-    @board.each_with_index.map do |col, y|
-      col.each_with_index.map do |field, x|
+    @board.each_with_index do |col, y|
+      col.each_with_index do |field, x|
         result << Location.new(x, y) if field == field_type
       end
     end
@@ -116,8 +116,6 @@ class Board
   end
 
   def remove_walls_horizontally(board)
-    board.each do |line|
-      board.delete(line) if line.all? { |field| field == Field::WALL }
-    end
+    board.reject! { |line| line.all? { |field| field == Field::WALL } }
   end
 end
