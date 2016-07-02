@@ -16,14 +16,14 @@ VAR
 
 DEFINE
   fields := [<%= self.board.map{ |col| "[#{col.map { |field| field == Field::WALL ? 'WALL' : 'EMPTY'}.join(',')}]" }.join(', ') %>];
-  goals := <%= self.goals.map{ |goal| [goal[:x], goal[:y]] } %>;
+  goals := <%= self.goals.map{ |goal| [goal.x, goal.y] } %>;
 
 ASSIGN
-  init(x) := <%= self.man[:x] %>;
-  init(y) := <%= self.man[:y] %>;
+  init(x) := <%= self.man.x %>;
+  init(y) := <%= self.man.y %>;
   <% self.blocks.each_with_index do |block, index| %>
-  init(blocks[<%= index %>][0]) := <%= block[:x] %>;
-  init(blocks[<%= index %>][1]) := <%= block[:y] %>;
+  init(blocks[<%= index %>][0]) := <%= block.x %>;
+  init(blocks[<%= index %>][1]) := <%= block.y %>;
   <% end %>
   -- the direction in which the man moves has to be empty, or when a block is on it, that block should be movable in the same direction
   next(north_enabled) := y > 0 & fields[x][y - 1] = EMPTY | (<%= (0...self.blocks.size).map { |index| "(blocks[#{index}][0] = x & blocks[#{index}][1] = (y - 1) & y > 1 & fields[x][y - 2] = EMPTY)" }.join(' | ') %>);
