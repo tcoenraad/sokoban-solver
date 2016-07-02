@@ -9,6 +9,10 @@ class Location
     @x = x
     @y = y
   end
+
+  def ==(other)
+    other.instance_of?(self.class) && x == other.x && y == other.y
+  end
 end
 
 class Field
@@ -78,15 +82,23 @@ class Board
   end
 
   def goals
-    @goals ||= find_fields(Field::GOAL)
+    @goals ||= find_locations(Field::GOAL)
   end
 
   def blocks
-    @blocks ||= find_fields(Field::BLOCK)
+    @blocks ||= find_locations(Field::BLOCK)
+  end
+
+  def transitionable_fields(iterations, delta_x, delta_y)
+    fields.select { |f| (1..iterations).all? { |i| fields.include?(Location.new(f.x + i * delta_x, f.y + i * delta_y)) } }
+  end
+
+  def fields
+    @fields ||= find_locations([Field::MAN, Field::GOAL, Field::EMPTY, Field::BLOCK])
   end
 
   def man
-    @man ||= find_fields(Field::MAN).first
+    @man ||= find_locations(Field::MAN).first
   end
 
   def to_s
@@ -105,11 +117,13 @@ class Board
 
   private
 
-  def find_fields(field_type)
+  def find_locations(field_types)
+    field_types = [field_types] unless field_types.is_a?(Array)
+
     result = []
     @board.each_with_index do |col, y|
       col.each_with_index do |field, x|
-        result << Location.new(x, y) if field == field_type
+        result << Location.new(x, y) if field_types.include?(field)
       end
     end
     result
