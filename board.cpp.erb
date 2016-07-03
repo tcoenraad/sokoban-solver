@@ -13,8 +13,8 @@ using namespace sylvan;
 int solve() {
     LACE_ME;
 <% n = 0 -%>
-<% self.board.each_with_index do |row, i|
-  row.each_with_index do |field, j| -%>
+<% self.board.each_with_index do |row, j|
+  row.each_with_index do |field, i| -%>
     <% next if field == Field::WALL %>
     Bdd man_<%= "#{i}_#{j}" %> = Bdd::bddVar(<%= n += 1 %>);
     Bdd man_<%= "#{i}_#{j}" %>_next = Bdd::bddVar(<%= n += 1 %>);
@@ -24,8 +24,8 @@ int solve() {
 <% end -%>
 
 <%
-initial_state = self.board.each_with_index.map do |row, i|
-  row.each_with_index.map do |field, j|
+initial_state = self.board.each_with_index.map do |row, j|
+  row.each_with_index.map do |field, i|
     next if field == Field::WALL
     ["#{field == Field::MAN ? '' : '!'}man_#{i}_#{j}",
      "#{field == Field::BLOCK ? '' : '!'}block_#{i}_#{j}"]
@@ -37,10 +37,10 @@ end
 
 <% self.fields.each do |field| -%>
   <% position = "#{field.x}_#{field.y}" %>
-    Bdd freeze_man_<%= position %> = (man_<%= position %> * man_<%= position %>_next) + (!man<%= position %> * !man_<%= position %>_next)
-    Bdd freeze_block_<%= position %> = (block_<%= position %> * block_<%= position %>_next) + (!block<%= position %> * !block_<%= position %>_next)
-    Bdd move_man_<%= position %> = !freeze_man_<%= position %>
-    Bdd move_block_<%= position %> = !freeze_block_<%= position %>
+    Bdd freeze_man_<%= position %> = (man_<%= position %> * man_<%= position %>_next) + (!man_<%= position %> * !man_<%= position %>_next);
+    Bdd freeze_block_<%= position %> = (block_<%= position %> * block_<%= position %>_next) + (!block_<%= position %> * !block_<%= position %>_next);
+    Bdd move_man_<%= position %> = !freeze_man_<%= position %>;
+    Bdd move_block_<%= position %> = !freeze_block_<%= position %>;
 <% end -%>
 
 <%
