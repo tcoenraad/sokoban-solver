@@ -45,31 +45,34 @@ int solve() {
 <% end -%>
 
 <%
-def find_transitions_man(delta_x, delta_y)
-  self.transitionable_fields(1, delta_x, delta_y).map do |field|
+def find_transitions(delta_x, delta_y)
+  man_moves_transitions = self.transitionable_fields(1, delta_x, delta_y).map do |field|
   frozen_locations = self.fields.reject { |f| (0..1).any? { |i| f.x == field.x + i * delta_x && f.y == field.y + i * delta_y } }
   ["man_#{field.x}_#{field.y}", "!man_#{field.x}_#{field.y}_next", "!man_#{field.x + delta_x}_#{field.y + delta_y}", "man_#{field.x + delta_x}_#{field.y + delta_y}_next", "!block_#{field.x + delta_x}_#{field.y + delta_y}", "freeze_block_#{field.x}_#{field.y}", "freeze_block_#{field.x + delta_x}_#{field.y + delta_y}"] +
     frozen_locations.flat_map { |f| ["freeze_man_#{f.x}_#{f.y}", "freeze_block_#{f.x}_#{f.y}"] }
   end
+
+  man_pushes_block_transitions = self.transitionable_fields(2, delta_x, delta_y).map do |field|
+    frozen_locations = self.fields.reject { |f| (0..2).any? { |i| f.x == field.x + i * delta_x && f.y == field.y + i * delta_y } }
+    ["man_#{field.x}_#{field.y}", "!man_#{field.x}_#{field.y}_next", "!man_#{field.x + delta_x}_#{field.y + delta_y}", "man_#{field.x + delta_x}_#{field.y + delta_y}_next"] +
+      ["block_#{field.x + delta_x}_#{field.y + delta_y}", "!block_#{field.x + delta_x}_#{field.y + delta_y}_next", "!block_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}", "block_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}_next", "freeze_man_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}", "freeze_block_#{field.x}_#{field.y}"] +
+      frozen_locations.flat_map { |f| ["freeze_man_#{f.x}_#{f.y}", "freeze_block_#{f.x}_#{f.y}"] }
+  end
+
+  man_moves_transitions + man_pushes_block_transitions
 end
 
 def find_transitions_block(delta_x, delta_y)
-  self.transitionable_fields(2, delta_x, delta_y).map do |field|
-  frozen_locations = self.fields.reject { |f| (0..2).any? { |i| f.x == field.x + i * delta_x && f.y == field.y + i * delta_y } }
-  ["man_#{field.x}_#{field.y}", "!man_#{field.x}_#{field.y}_next", "!man_#{field.x + delta_x}_#{field.y + delta_y}", "man_#{field.x + delta_x}_#{field.y + delta_y}_next"] +
-    ["block_#{field.x + delta_x}_#{field.y + delta_y}", "!block_#{field.x + delta_x}_#{field.y + delta_y}_next", "!block_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}", "block_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}_next", "freeze_man_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}", "freeze_block_#{field.x}_#{field.y}"] +
-    frozen_locations.flat_map { |f| ["freeze_man_#{f.x}_#{f.y}", "freeze_block_#{f.x}_#{f.y}"] }
-  end
 end
 -%>
 
-<% north_transitions = (find_transitions_man(-1, 0) + find_transitions_block(-1, 0)) -%>
+<% north_transitions = (find_transitions(-1, 0)) -%>
   Bdd north_transitions = <%= (north_transitions.any? ? north_transitions : [['sylvan_false']]).map {|transition| "(#{transition.join(' * ')})"} .join("\n + ") %>;
-<% south_transitions = (find_transitions_man(1, 0) + find_transitions_block(1, 0)) -%>
+<% south_transitions = (find_transitions(1, 0)) -%>
   Bdd south_transitions = <%= (south_transitions.any? ? south_transitions : [['sylvan_false']]).map {|transition| "(#{transition.join(' * ')})"} .join("\n + ") %>;
-<% east_transitions = (find_transitions_man(0, 1) + find_transitions_block(0, 1)) -%>
+<% east_transitions = (find_transitions(0, 1)) -%>
   Bdd east_transitions = <%= (east_transitions.any? ? east_transitions : [['sylvan_false']]).map {|transition| "(#{transition.join(' * ')})"} .join("\n + ") %>;
-<% west_transitions = (find_transitions_man(0, -1) + find_transitions_block(0, -1)) -%>
+<% west_transitions = (find_transitions(0, -1)) -%>
   Bdd west_transitions = <%= (west_transitions.any? ? west_transitions : [['sylvan_false']]).map {|transition| "(#{transition.join(' * ')})"} .join("\n + ") %>;
 
   Bdd transitions = north_transitions + south_transitions + east_transitions + west_transitions;
@@ -140,7 +143,7 @@ end
     state_history.pop_back();
   }
 
-  std::cout << "The following path leads to a solution for this puzzle: " << join(backtrace, ",") << std::endl;
+  std::cout << "The following path leads to a solution for this puzzle: " << join(backtrace, "") << std::endl;
 
   return 0;
 }
