@@ -10,70 +10,147 @@
 
 using namespace sylvan;
 
-int solve() {
-    LACE_ME;
-<% n = 0 -%>
-<% self.fields.each do |field| %>
-    Bdd man_<%= "#{field.x}_#{field.y}" %> = Bdd::bddVar(<%= n += 1 %>);
-    Bdd man_<%= "#{field.x}_#{field.y}" %>_next = Bdd::bddVar(<%= n += 1 %>);
-    Bdd block_<%= "#{field.x}_#{field.y}" %> = Bdd::bddVar(<%= n += 1 %>);
-    Bdd block_<%= "#{field.x}_#{field.y}" %>_next = Bdd::bddVar(<%= n += 1 %>);
-<% end -%>
+// based on http://csnipp.com/s/670/-Join-a-vector-of-std::string-with-a-custom-delimiter
+std::string join(std::vector<std::string> &elements, std::string delimiter) {
+  std::stringstream ss;
+  size_t elems = elements.size();
+  size_t last = elems - 1;
 
-<%
-initial_state = self.board.each_with_index.map do |row, j|
-  row.each_with_index.map do |field, i|
-    next if field == Field::WALL
-    ["#{field == Field::MAN ? '' : '!'}man_#{i}_#{j}",
-     "#{field == Field::BLOCK ? '' : '!'}block_#{i}_#{j}"]
-  end
-end
--%>
-    Bdd initial_state = <%= initial_state.join(' * ') %>;
-    Bdd goal_state = <%= goals.map{|b| "block_#{b.x}_#{b.y}"}.join(' * ') -%>;
+  for (size_t i = 0; i < elems; i++) {
+    ss << elements[i];
+    if (i != last) {
+      ss << delimiter;
+    }
+  }
+
+  return ss.str();
+}
+
+int solve() {
+  LACE_ME;
+<% n = -1 -%>
+<% self.fields.each do |field| %>
+  Bdd man_<%= "#{field.x}_#{field.y}" %> = Bdd::bddVar(<%= n += 1 %>);
+  Bdd man_<%= "#{field.x}_#{field.y}" %>_next = Bdd::bddVar(<%= n += 1 %>);
+  Bdd block_<%= "#{field.x}_#{field.y}" %> = Bdd::bddVar(<%= n += 1 %>);
+  Bdd block_<%= "#{field.x}_#{field.y}" %>_next = Bdd::bddVar(<%= n += 1 %>);
+<% end -%>
 
 <% self.fields.each do |field| -%>
   <% position = "#{field.x}_#{field.y}" %>
-    Bdd freeze_man_<%= position %> = (man_<%= position %> * man_<%= position %>_next) + (!man_<%= position %> * !man_<%= position %>_next);
-    Bdd freeze_block_<%= position %> = (block_<%= position %> * block_<%= position %>_next) + (!block_<%= position %> * !block_<%= position %>_next);
-    Bdd move_man_<%= position %> = !freeze_man_<%= position %>;
-    Bdd move_block_<%= position %> = !freeze_block_<%= position %>;
+  Bdd freeze_man_<%= position %> = (man_<%= position %> * man_<%= position %>_next) + (!man_<%= position %> * !man_<%= position %>_next);
+  Bdd freeze_block_<%= position %> = (block_<%= position %> * block_<%= position %>_next) + (!block_<%= position %> * !block_<%= position %>_next);
+  Bdd move_man_<%= position %> = !freeze_man_<%= position %>;
+  Bdd move_block_<%= position %> = !freeze_block_<%= position %>;
 <% end -%>
 
 <%
 def find_transitions_man(delta_x, delta_y)
   self.transitionable_fields(1, delta_x, delta_y).map do |field|
-    frozen_locations = self.fields.reject { |f| (0..1).any? { |i| f.x == field.x + i * delta_x && f.y == field.y + i * delta_y } }
-    ["man_#{field.x}_#{field.y}", "!man_#{field.x}_#{field.y}_next", "!man_#{field.x + delta_x}_#{field.y + delta_y}", "man_#{field.x + delta_x}_#{field.y + delta_y}_next"] +
-      frozen_locations.flat_map { |f| ["freeze_man_#{f.x}_#{f.y}", "freeze_block_#{f.x}_#{f.y}"] }
+  frozen_locations = self.fields.reject { |f| (0..1).any? { |i| f.x == field.x + i * delta_x && f.y == field.y + i * delta_y } }
+  ["man_#{field.x}_#{field.y}", "!man_#{field.x}_#{field.y}_next", "!man_#{field.x + delta_x}_#{field.y + delta_y}", "man_#{field.x + delta_x}_#{field.y + delta_y}_next", "!block_#{field.x + delta_x}_#{field.y + delta_y}", "freeze_block_#{field.x}_#{field.y}", "freeze_block_#{field.x + delta_x}_#{field.y + delta_y}"] +
+    frozen_locations.flat_map { |f| ["freeze_man_#{f.x}_#{f.y}", "freeze_block_#{f.x}_#{f.y}"] }
   end
 end
 
 def find_transitions_block(delta_x, delta_y)
   self.transitionable_fields(2, delta_x, delta_y).map do |field|
-    frozen_locations = self.fields.reject { |f| (0..2).any? { |i| f.x == field.x + i * delta_x && f.y == field.y + i * delta_y } }
-    ["man_#{field.x}_#{field.y}", "!man_#{field.x}_#{field.y}_next", "!man_#{field.x}_#{field.y + delta_y}", "man_#{field.x}_#{field.y + delta_y}_next"] +
-      ["block_#{field.x}_#{field.y + delta_y}", "!block_#{field.x}_#{field.y + delta_y}_next", "!block_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}", "block_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}_next"] +
-      frozen_locations.flat_map { |f| ["freeze_man_#{f.x}_#{f.y}", "freeze_block_#{f.x}_#{f.y}"] }
+  frozen_locations = self.fields.reject { |f| (0..2).any? { |i| f.x == field.x + i * delta_x && f.y == field.y + i * delta_y } }
+  ["man_#{field.x}_#{field.y}", "!man_#{field.x}_#{field.y}_next", "!man_#{field.x + delta_x}_#{field.y + delta_y}", "man_#{field.x + delta_x}_#{field.y + delta_y}_next"] +
+    ["block_#{field.x + delta_x}_#{field.y + delta_y}", "!block_#{field.x + delta_x}_#{field.y + delta_y}_next", "!block_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}", "block_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}_next", "freeze_man_#{field.x + 2 * delta_x}_#{field.y + 2 * delta_y}", "freeze_block_#{field.x}_#{field.y}"] +
+    frozen_locations.flat_map { |f| ["freeze_man_#{f.x}_#{f.y}", "freeze_block_#{f.x}_#{f.y}"] }
   end
 end
 -%>
 
-Bdd north_transitions = <%= (find_transitions_man(-1, 0) + find_transitions_block(-1, 0)).map {|transition| "(#{transition.join(' * ')})"} .join(' + ') %>;
-Bdd south_transitions = <%= (find_transitions_man(1, 0) + find_transitions_block(1, 0)).map {|transition| "(#{transition.join(' * ')})"} .join(' + ') %>;
-Bdd east_transitions = <%= (find_transitions_man(0, 1) + find_transitions_block(0, 1)).map {|transition| "(#{transition.join(' * ')})"} .join(' + ') %>;
-Bdd west_transitions = <%= (find_transitions_man(0, -1) + find_transitions_block(0, -1)).map {|transition| "(#{transition.join(' * ')})"} .join(' + ') %>;
+<% north_transitions = (find_transitions_man(-1, 0) + find_transitions_block(-1, 0)) -%>
+  Bdd north_transitions = <%= (north_transitions.any? ? north_transitions : [['sylvan_false']]).map {|transition| "(#{transition.join(' * ')})"} .join("\n + ") %>;
+<% south_transitions = (find_transitions_man(1, 0) + find_transitions_block(1, 0)) -%>
+  Bdd south_transitions = <%= (south_transitions.any? ? south_transitions : [['sylvan_false']]).map {|transition| "(#{transition.join(' * ')})"} .join("\n + ") %>;
+<% east_transitions = (find_transitions_man(0, 1) + find_transitions_block(0, 1)) -%>
+  Bdd east_transitions = <%= (east_transitions.any? ? east_transitions : [['sylvan_false']]).map {|transition| "(#{transition.join(' * ')})"} .join("\n + ") %>;
+<% west_transitions = (find_transitions_man(0, -1) + find_transitions_block(0, -1)) -%>
+  Bdd west_transitions = <%= (west_transitions.any? ? west_transitions : [['sylvan_false']]).map {|transition| "(#{transition.join(' * ')})"} .join("\n + ") %>;
 
-    return 0;
+  Bdd transitions = north_transitions + south_transitions + east_transitions + west_transitions;
+
+  BddSet all_states = BddSet::fromVector(std::vector<Bdd>{ <%= self.fields.map { |field| ["man_#{field.x}_#{field.y}", "block_#{field.x}_#{field.y}", "man_#{field.x}_#{field.y}_next", "block_#{field.x}_#{field.y}_next"] }.join(',') %> });
+
+<%
+initial_state = self.board.each_with_index.map do |row, j|
+  row.each_with_index.map do |field, i|
+  next if field == Field::WALL
+  ["#{field == Field::MAN ? '' : '!'}man_#{i}_#{j}",
+   "#{field == Field::BLOCK ? '' : '!'}block_#{i}_#{j}"]
+  end.compact
+end
+-%>
+  Bdd initial_state = <%= initial_state.join(' * ') %>;
+  Bdd goal_state = <%= goals.map { |b| "block_#{b.x}_#{b.y}" }.join(' * ') -%>;
+
+  Bdd visited_states = initial_state;
+  Bdd current_state = initial_state;
+  std::vector<Bdd> state_history { initial_state };
+
+  while (current_state != sylvan_false) {
+    current_state = current_state.RelNext(transitions, all_states) - visited_states;
+    state_history.push_back(current_state);
+    visited_states += current_state;
+
+    if (current_state * goal_state != sylvan_false) {
+      break;
+    }
+  }
+
+  if (current_state == sylvan_false) {
+    std::cout << "No solution exists to this puzzle" << std::endl;
+    return 1;
+  }
+
+  std::vector<std::string> backtrace;
+  current_state = state_history.back() * goal_state;
+  state_history.pop_back();
+
+  Bdd prev;
+  while (!state_history.empty()) {
+    prev = current_state.RelPrev(north_transitions, all_states);
+    if (prev * state_history.back() != sylvan_false) {
+      backtrace.insert(backtrace.begin(), "u");
+      goto when_backtrace_step_found;
+    }
+    prev = current_state.RelPrev(south_transitions, all_states);
+    if (prev * state_history.back() != sylvan_false) {
+      backtrace.insert(backtrace.begin(), "d");
+      goto when_backtrace_step_found;
+    }
+    prev = current_state.RelPrev(east_transitions, all_states);
+    if (prev * state_history.back() != sylvan_false) {
+      backtrace.insert(backtrace.begin(), "r");
+      goto when_backtrace_step_found;
+    }
+    prev = current_state.RelPrev(west_transitions, all_states);
+    if (prev * state_history.back() != sylvan_false) {
+      backtrace.insert(backtrace.begin(), "l");
+      goto when_backtrace_step_found;
+    }
+
+    when_backtrace_step_found:
+    current_state = prev * state_history.back();
+
+    state_history.pop_back();
+  }
+
+  std::cout << "The following path leads to a solution for this puzzle: " << join(backtrace, ",") << std::endl;
+
+  return 0;
 }
 
 int main() {
-    lace_init(0, 0);
-    lace_startup(0, NULL, NULL);
+  lace_init(0, 0);
+  lace_startup(0, NULL, NULL);
 
-    sylvan_init_package(1LL<<21, 1LL<<25, 1LL<<20, 1LL<<24);
-    sylvan_init_bdd(6);
+  sylvan_init_package(1LL<<21, 1LL<<25, 1LL<<20, 1LL<<24);
+  sylvan_init_bdd(6);
 
-    solve();
-    return 0;
+  return solve();
 }
