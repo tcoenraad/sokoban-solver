@@ -13,14 +13,11 @@ using namespace sylvan;
 int solve() {
     LACE_ME;
 <% n = 0 -%>
-<% self.board.each_with_index do |row, j|
-  row.each_with_index do |field, i| -%>
-    <% next if field == Field::WALL %>
-    Bdd man_<%= "#{i}_#{j}" %> = Bdd::bddVar(<%= n += 1 %>);
-    Bdd man_<%= "#{i}_#{j}" %>_next = Bdd::bddVar(<%= n += 1 %>);
-    Bdd block_<%= "#{i}_#{j}" %> = Bdd::bddVar(<%= n += 1 %>);
-    Bdd block_<%= "#{i}_#{j}" %>_next = Bdd::bddVar(<%= n += 1 %>);
-  <% end -%>
+<% self.fields.each do |field| %>
+    Bdd man_<%= "#{field.x}_#{field.y}" %> = Bdd::bddVar(<%= n += 1 %>);
+    Bdd man_<%= "#{field.x}_#{field.y}" %>_next = Bdd::bddVar(<%= n += 1 %>);
+    Bdd block_<%= "#{field.x}_#{field.y}" %> = Bdd::bddVar(<%= n += 1 %>);
+    Bdd block_<%= "#{field.x}_#{field.y}" %>_next = Bdd::bddVar(<%= n += 1 %>);
 <% end -%>
 
 <%
