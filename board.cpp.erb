@@ -30,14 +30,12 @@ int solve() {
   LACE_ME;
 <% n = -1 -%>
 <% self.fields.each do |field| %>
-  Bdd man_<%= "#{field.x}_#{field.y}" %> = Bdd::bddVar(<%= n += 1 %>);
-  Bdd man_<%= "#{field.x}_#{field.y}" %>_next = Bdd::bddVar(<%= n += 1 %>);
-  Bdd block_<%= "#{field.x}_#{field.y}" %> = Bdd::bddVar(<%= n += 1 %>);
-  Bdd block_<%= "#{field.x}_#{field.y}" %>_next = Bdd::bddVar(<%= n += 1 %>);
-<% end -%>
-
-<% self.fields.each do |field| -%>
   <% position = "#{field.x}_#{field.y}" %>
+  Bdd man_<%= position %> = Bdd::bddVar(<%= n += 1 %>);
+  Bdd man_<%= position %>_next = Bdd::bddVar(<%= n += 1 %>);
+  Bdd block_<%= position %> = Bdd::bddVar(<%= n += 1 %>);
+  Bdd block_<%= position %>_next = Bdd::bddVar(<%= n += 1 %>);
+
   Bdd freeze_man_<%= position %> = (man_<%= position %> * man_<%= position %>_next) + (!man_<%= position %> * !man_<%= position %>_next);
   Bdd freeze_block_<%= position %> = (block_<%= position %> * block_<%= position %>_next) + (!block_<%= position %> * !block_<%= position %>_next);
   Bdd move_man_<%= position %> = !freeze_man_<%= position %>;
@@ -60,9 +58,6 @@ def find_transitions(delta_x, delta_y)
   end
 
   man_moves_transitions + man_pushes_block_transitions
-end
-
-def find_transitions_block(delta_x, delta_y)
 end
 -%>
 
