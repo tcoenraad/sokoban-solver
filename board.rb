@@ -18,6 +18,8 @@ end
 class Field
   WALL = 'WALL'.freeze
   MAN = 'MAN'.freeze
+  MAN_ON_GOAL = 'MAN_ON_GOAL'.freeze
+  BLOCK_ON_GOAL = 'BLOCK_ON_GOAL'.freeze
   GOAL = 'GOAL'.freeze
   EMPTY = 'EMPTY'.freeze
   BLOCK = 'BLOCK'.freeze
@@ -26,6 +28,8 @@ class Field
     '#' => Field::WALL,
     '@' => Field::MAN,
     '.' => Field::GOAL,
+    '+' => Field::MAN_ON_GOAL,
+    '*' => Field::BLOCK_ON_GOAL,
     ' ' => Field::EMPTY,
     '$' => Field::BLOCK
   }.freeze
@@ -82,11 +86,11 @@ class Board
   end
 
   def goals
-    @goals ||= find_locations(Field::GOAL)
+    @goals ||= find_locations([Field::GOAL, Field::MAN_ON_GOAL, Field::BLOCK_ON_GOAL])
   end
 
   def blocks
-    @blocks ||= find_locations(Field::BLOCK)
+    @blocks ||= find_locations([Field::BLOCK, Field::BLOCK_ON_GOAL])
   end
 
   def transitionable_fields(iterations, delta_x, delta_y)
@@ -94,7 +98,7 @@ class Board
   end
 
   def fields
-    @fields ||= find_locations([Field::MAN, Field::GOAL, Field::EMPTY, Field::BLOCK])
+    @fields ||= find_locations([Field::MAN, Field::GOAL, Field::MAN_ON_GOAL, Field::BLOCK_ON_GOAL, Field::EMPTY, Field::BLOCK])
   end
 
   def man
