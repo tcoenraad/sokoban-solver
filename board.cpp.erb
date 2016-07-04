@@ -93,7 +93,7 @@ end
   while (current_state != sylvan_false) {
     current_state = current_state.RelNext(transitions, all_states) - visited_states;
     state_history.push_back(current_state);
-    visited_states += current_state;
+    visited_states = visited_states + current_state;
 
     if (current_state * goal_state != sylvan_false) {
       break;
